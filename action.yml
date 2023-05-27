@@ -39,8 +39,8 @@ runs:
         shell: bash
         run: |
           sudo apt-get update
-          python3 -m venv .env
-          source .env/bin/activate
+          python3 -m venv .env2
+          source .env2/bin/activate
           python -m pip install -U pip
           pip install openai
           pip install requests
@@ -51,7 +51,7 @@ runs:
       - name: Review PR and make comment
         shell: bash
         run: |
-          source .env/bin/activate
+          source .env2/bin/activate
           python review.py
         env:
           GIT_COMMIT_HASH: ${{ inputs.GIT_COMMIT_HASH }}
