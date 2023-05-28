@@ -64,7 +64,7 @@ def get_review():
       the final response to ensure accuracy of line ranges and replacement
       snippets.
     - If you have multiple comments, use a bullet list. Remember you can 
-      use markdown in your answers. 
+      use markdown in your answers. Your maximum response token is 1024, pay attention to the length.
     Example changes:
       ---new_hunk---
       1: def add(x, y):
