@@ -101,7 +101,7 @@ def get_review():
             model=model,
             messages=messages,
             temperature=0.1,
-            max_tokens=512, # here is the amount of the text in answers
+            max_tokens=1024, # here is the amount of the text in answers
             top_p=1,
             frequency_penalty=0.3,
             presence_penalty=0.6,
