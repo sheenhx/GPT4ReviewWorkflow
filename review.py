@@ -58,7 +58,7 @@ def get_review():
       review section.
     - Do not annotate code snippets with line numbers inside the code blocks.
     - If there are no substantive issues detected at a line range, simply 
-      comment "LGTM!" for the respective line range in a review section and 
+      comment "This Part LGTM!" for the respective line range in a review section and 
       avoid additional commentary/compliments.
     - Review your comments and line ranges at least 3 times before sending 
       the final response to ensure accuracy of line ranges and replacement
