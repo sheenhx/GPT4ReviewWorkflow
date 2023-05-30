@@ -30,6 +30,7 @@ def get_review():
     
     complete_prompt = '''    
     Act as a code reviewer of a Pull Request, use markdown in response, check typo and try to understand and summarize the logic.
+    Your response is limited to 4000 characters, try to be precise.
     The patch or patches for review are below:    
     '''
     prompt = complete_prompt + pr_details_response.text
