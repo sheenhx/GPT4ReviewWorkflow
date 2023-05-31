@@ -13,7 +13,7 @@ def get_review():
     pr_link = os.getenv("LINK")
 
     headers = {
-        "Accept": "application/vnd.github.v3.patch",
+        "Accept": "application/vnd.github.v3.diff",
         "authorization": f"Bearer {ACCESS_TOKEN}",
     }
     
@@ -22,7 +22,7 @@ def get_review():
     PR_NUMBER = pr_link.split("/")[-1]
 
     # Get the diff of the pull request
-    pr_details_url = f"https://api.github.com/repos/{OWNER}/{REPO}/pulls/{PR_NUMBER}.diff"
+    pr_details_url = f"https://api.github.com/repos/{OWNER}/{REPO}/pulls/{PR_NUMBER}"
     pr_details_response = requests.get(pr_details_url, headers=headers)
     if pr_details_response.status_code != 200:
         print(f"Error fetching pull request details: {pr_details_response.status_code} - {pr_details_response.text}")
