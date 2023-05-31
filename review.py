@@ -13,7 +13,7 @@ def get_review():
     pr_link = os.getenv("LINK")
 
     headers = {
-        "Accept": "application/vnd.github.v3.patch",
+        "Accept": "application/vnd.github.v3+json",
         "authorization": f"Bearer {ACCESS_TOKEN}",
     }
     
@@ -21,8 +21,8 @@ def get_review():
     REPO = pr_link.split("/")[-3]
     PR_NUMBER = pr_link.split("/")[-1]
 
-    # Get the patch of the pull request
-    pr_details_url = f"https://api.github.com/repos/{OWNER}/{REPO}/pulls/{PR_NUMBER}"
+    # Get the diff of the pull request
+    pr_details_url = f"https://api.github.com/repos/{OWNER}/{REPO}/pulls/{PR_NUMBER}.diff"
     pr_details_response = requests.get(pr_details_url, headers=headers)
     if pr_details_response.status_code != 200:
         print(f"Error fetching pull request details: {pr_details_response.status_code} - {pr_details_response.text}")
@@ -38,7 +38,7 @@ def get_review():
     print(f"\nPrompt sent to GPT-4: {prompt}\n")
 
     AVG_CHAR_PER_TOKEN = 4
-    CHUNK_SIZE = 6000
+    CHUNK_SIZE = 6200
     num_chunks = math.ceil(len(prompt) / AVG_CHAR_PER_TOKEN / CHUNK_SIZE)
 
     for i in range(num_chunks):
@@ -78,7 +78,6 @@ def get_review():
         data = json.dumps(data)
         print(f"\nResponse from GPT-4: {data}\n")
 
-        # https://api.github.com/repos/OWNER/REPO/pulls/PULL_NUMBER/reviews
         response = requests.post(
             f"https://api.github.com/repos/{OWNER}/{REPO}/pulls/{PR_NUMBER}/reviews",
             headers=headers,
