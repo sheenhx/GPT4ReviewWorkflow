@@ -13,7 +13,7 @@ def get_review():
     pr_link = os.getenv("LINK")
 
     headers = {
-        "Accept": "application/vnd.github.v3+json",
+        "Accept": "application/vnd.github.v3",
         "authorization": f"Bearer {ACCESS_TOKEN}",
     }
     
@@ -38,8 +38,9 @@ def get_review():
     print(f"\nPrompt sent to GPT-4: {prompt}\n")
 
     AVG_CHAR_PER_TOKEN = 4
-    CHUNK_SIZE = 6200
+    CHUNK_SIZE = 6000
     num_chunks = math.ceil(len(prompt) / AVG_CHAR_PER_TOKEN / CHUNK_SIZE)
+    reviews = []
 
     for i in range(num_chunks):
         chunk_start = i * CHUNK_SIZE * AVG_CHAR_PER_TOKEN
@@ -71,9 +72,10 @@ def get_review():
         except Exception as e:
             print(f"An unexpected error occurred: {e}")
             return
-            
-        review = response["choices"][0]["message"]["content"]
 
+        reviews.append(response["choices"][0]["message"]["content"])
+
+    for review in reviews:
         data = {"body": review, "commit_id": GIT_COMMIT_HASH, "event": "COMMENT"}
         data = json.dumps(data)
         print(f"\nResponse from GPT-4: {data}\n")
@@ -84,7 +86,6 @@ def get_review():
             data=data,
         )
         print(response.json())
-
 
 if __name__ == "__main__":
     get_review()
