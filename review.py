@@ -13,7 +13,7 @@ def get_review():
     pr_link = os.getenv("LINK")
 
     headers = {
-        "Accept": "application/vnd.github.v3",
+        "Accept": "application/vnd.github.v3.patch",
         "authorization": f"Bearer {ACCESS_TOKEN}",
     }
     
