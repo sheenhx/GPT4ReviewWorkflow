@@ -35,10 +35,10 @@ def get_review():
     '''
     prompt = complete_prompt + pr_details_response.text
 
-    print(f"\nPrompt sent to GPT-4: {prompt}\n")
+    print(f"\nPrompt in full sent to GPT-4: {prompt}\n")
 
     AVG_CHAR_PER_TOKEN = 4
-    CHUNK_SIZE = 5200
+    CHUNK_SIZE = 4200
     num_chunks = math.ceil(len(prompt) / AVG_CHAR_PER_TOKEN / CHUNK_SIZE)
     reviews = []
 
@@ -72,6 +72,8 @@ def get_review():
         except Exception as e:
             print(f"An unexpected error occurred: {e}")
             return
+        
+        print(f"\nPrompt in chunk sent to GPT-4: {chunk}\n")
 
         reviews.append(response["choices"][0]["message"]["content"])
 
