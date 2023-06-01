@@ -46,9 +46,10 @@ def get_review():
         chunk_start = i * CHUNK_SIZE * AVG_CHAR_PER_TOKEN
         chunk_end = (i+1) * CHUNK_SIZE * AVG_CHAR_PER_TOKEN
         chunk = prompt[chunk_start:chunk_end]
+        chunk_prompt = complete_prompt + chunk
         messages = [
             {"role": "system", "content": "You are an experienced software developer."},
-            {"role": "user", "content": chunk},
+            {"role": "user", "content": chunk_prompt},
         ]
 
         try:
@@ -73,7 +74,7 @@ def get_review():
             print(f"An unexpected error occurred: {e}")
             return
         
-        print(f"\nPrompt in chunk sent to GPT-4: {chunk}\n")
+        print(f"\nPrompt in chunk sent to GPT-4: {chunk_prompt}\n")
 
         reviews.append(response["choices"][0]["message"]["content"])
 
