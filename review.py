@@ -20,20 +20,29 @@ def get_review():
     OWNER = pr_link.split("/")[-4]
     REPO = pr_link.split("/")[-3]
     PR_NUMBER = pr_link.split("/")[-1]
+    
+    
+    # Get the list of commits in the pull request
+    response = requests.get(f"https://api.github.com/repos/{OWNER}/{REPO}/pulls/{PR_NUMBER}/commits", headers=headers)
+    response.raise_for_status()  # raise exception if request failed
+    commits = response.json()
 
-    # Get the diff of the pull request
-    pr_details_url = f"https://api.github.com/repos/{OWNER}/{REPO}/pulls/{PR_NUMBER}"
-    pr_details_response = requests.get(pr_details_url, headers=headers)
-    if pr_details_response.status_code != 200:
-        print(f"Error fetching pull request details: {pr_details_response.status_code} - {pr_details_response.text}")
-        return
+    # Filter commits to exclude those with "no-review" in the message
+    filtered_commits = [commit for commit in commits if "no-review" not in commit["commit"]["message"].lower()]
+
+    # Get the diff for each commit
+    for commit in filtered_commits:
+        response = requests.get(f"https://api.github.com/repos/{owner}/{repo}/commits/{commit['sha']}", headers=headers)
+        response.raise_for_status()  # raise exception if request failed
+        # Remove indentation and blank spaces
+        compact_diff = ''.join(line.lstrip() for line in response.text.splitlines())
     
     complete_prompt = '''    
     Act as a code reviewer of a Pull Request, use markdown in response, check typo and try to understand and summarize the logic.
     Your response is limited to 4000 characters, try to be precise. Try to find as many problems as possible.
     The patch or patches for review are below:    
     '''
-    prompt = complete_prompt + pr_details_response.text
+    prompt = complete_prompt + compact_diff
 
     print(f"\nPrompt in full sent to GPT-4: {prompt}\n")
 
