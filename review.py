@@ -2,6 +2,7 @@ import os
 import requests
 import json
 import openai
+import math
 
 def get_review():
     ACCESS_TOKEN = os.getenv("GITHUB_TOKEN")
@@ -12,7 +13,7 @@ def get_review():
     pr_link = os.getenv("LINK")
 
     headers = {
-        "Accept": "application/vnd.github.v3.patch",
+        "Accept": "application/vnd.github.v3.diff",
         "authorization": f"Bearer {ACCESS_TOKEN}",
     }
     
@@ -20,7 +21,7 @@ def get_review():
     REPO = pr_link.split("/")[-3]
     PR_NUMBER = pr_link.split("/")[-1]
 
-    # Get the patch of the pull request
+    # Get the diff of the pull request
     pr_details_url = f"https://api.github.com/repos/{OWNER}/{REPO}/pulls/{PR_NUMBER}"
     pr_details_response = requests.get(pr_details_url, headers=headers)
     if pr_details_response.status_code != 200:
@@ -28,114 +29,66 @@ def get_review():
         return
     
     complete_prompt = '''    
-    Act as a code reviewer of a Pull Request, providing feedback on the code changes below. You are provided with the Pull Request changes in a patch format.
-    Each patch entry has the commit message in the Subject line followed by the code changes (diffs) in a unidiff format.    
-    The above format for changes consists of multiple patches of code changes. 
-    Each patch contains the files and the lines that were removed and the lines that were added. 
-    Take into account that the lines that were removed or added may not be contiguous.
-    The last patch might modify previously modified lines, so take always the last patch where a line was modified
-    as the final version of the line.
-    Important instructions:
-    - Your task is to do a line by line review of new hunks and point out 
-      substantive issues in those line ranges. For each issue you 
-      identify, please provide the exact line range (inclusive) where 
-      the issue occurs.
-    - Only respond in the below response format (consisting of review
-      sections) and nothing else. Each review section must consist of a line 
-      range and a review comment for that line range. Optionally, 
-      you can include a single replacement suggestion snippet and/or multiple 
-      new code snippets in the review comment. There's a separator between review 
-      sections.
-    - Use Markdown format for review comment text.
-    - Fenced code blocks must be used for new content and replacement 
-      code/text snippets.  
-    - Replacement code/text snippets must be complete and correctly 
-      formatted. Each replacement suggestion must be provided as a separate review 
-      section with relevant line number ranges.  
-    - If needed, suggest new code using the correct language identifier in the 
-      fenced code blocks. These snippets may be added to a different file, such 
-      as test cases. Multiple new code snippets are allowed within a single 
-      review section.
-    - Do not annotate code snippets with line numbers inside the code blocks.
-    - If there are no substantive issues detected at a line range, simply 
-      comment "This Part LGTM!" for the respective line range in a review section and 
-      avoid additional commentary/compliments.
-    - Review your comments and line ranges at least 3 times before sending 
-      the final response to ensure accuracy of line ranges and replacement
-      snippets.
-    - If you have multiple comments, use a bullet list. Remember you can 
-      use markdown in your answers. Your maximum response token is 1024, pay attention to the length.
-    Example changes:
-      ---new_hunk---
-      1: def add(x, y):
-      2:     z = x+y
-      3:     retrn z
-      4:
-      5: def multiply(x, y):
-      6:     return x * y
-      
-      ---old_hunk---
-      def add(x, y):
-          return x + y
-    Example response:
-      - There's a typo in the return statement.
-      \`\`\`suggestion
-          return z
-      \`\`\`
-      ---
-      LGTM
-      ---
+    Act as a code reviewer of a Pull Request, use markdown in response, check typo and try to understand and summarize the logic.
+    Your response is limited to 4000 characters, try to be precise. Try to find as many problems as possible.
     The patch or patches for review are below:    
     '''
     prompt = complete_prompt + pr_details_response.text
 
-    print(f"\nPrompt sent to GPT-4: {prompt}\n")
-    
-    messages = [
-        {"role": "system", "content": "You are an experienced software developer."},
-        {"role": "user", "content": prompt},
-    ]
+    print(f"\nPrompt in full sent to GPT-4: {prompt}\n")
 
-    try:
-        response = openai.ChatCompletion.create(
-            model=model,
-            messages=messages,
-            temperature=0.1,
-            max_tokens=1024, # here is the amount of the text in answers
-            top_p=1,
-            frequency_penalty=0.3,
-            presence_penalty=0.6,
-        )
-    except openai.error.RateLimitError as e:
-        print(f"RateLimitError: {e}")
-        print("You have exceeded your current quota. Please check your plan and billing details.")
-        return
-    except openai.error.InvalidRequestError as e:
-        print(f"InvalidRequestError: {e}")
-        print("Your request is invalid. Please check the input and try again.")
-        return
-    except Exception as e:
-        print(f"An unexpected error occurred: {e}")
-        return
+    AVG_CHAR_PER_TOKEN = 4
+    CHUNK_SIZE = 4200
+    num_chunks = math.ceil(len(prompt) / AVG_CHAR_PER_TOKEN / CHUNK_SIZE)
+    reviews = []
+
+    for i in range(num_chunks):
+        chunk_start = i * CHUNK_SIZE * AVG_CHAR_PER_TOKEN
+        chunk_end = (i+1) * CHUNK_SIZE * AVG_CHAR_PER_TOKEN
+        chunk = prompt[chunk_start:chunk_end]
+        chunk_prompt = complete_prompt + chunk
+        messages = [
+            {"role": "system", "content": "You are an experienced software developer."},
+            {"role": "user", "content": chunk_prompt},
+        ]
+
+        try:
+            response = openai.ChatCompletion.create(
+                model=model,
+                messages=messages,
+                temperature=0.1,
+                max_tokens=1024, # here is the amount of the text in answers
+                top_p=1,
+                frequency_penalty=0.3,
+                presence_penalty=0.6,
+            )
+        except openai.error.RateLimitError as e:
+            print(f"RateLimitError: {e}")
+            print("You have exceeded your current quota. Please check your plan and billing details.")
+            return
+        except openai.error.InvalidRequestError as e:
+            print(f"InvalidRequestError: {e}")
+            print("Your request is invalid. Please check the input and try again.")
+            return
+        except Exception as e:
+            print(f"An unexpected error occurred: {e}")
+            return
         
-    review = response["choices"][0]["message"]["content"]
+        print(f"\nPrompt in chunk sent to GPT-4: {chunk_prompt}\n")
 
-    data = {"body": review, "commit_id": GIT_COMMIT_HASH, "event": "COMMENT"}
-    data = json.dumps(data)
-    print(f"\nResponse from GPT-4: {data}\n")
+        reviews.append(response["choices"][0]["message"]["content"])
 
-    OWNER = pr_link.split("/")[-4]
-    REPO = pr_link.split("/")[-3]
-    PR_NUMBER = pr_link.split("/")[-1]
+    for review in reviews:
+        data = {"body": review, "commit_id": GIT_COMMIT_HASH, "event": "COMMENT"}
+        data = json.dumps(data)
+        print(f"\nResponse from GPT-4: {data}\n")
 
-    # https://api.github.com/repos/OWNER/REPO/pulls/PULL_NUMBER/reviews
-    response = requests.post(
-        f"https://api.github.com/repos/{OWNER}/{REPO}/pulls/{PR_NUMBER}/reviews",
-        headers=headers,
-        data=data,
-    )
-    print(response.json())
-
+        response = requests.post(
+            f"https://api.github.com/repos/{OWNER}/{REPO}/pulls/{PR_NUMBER}/reviews",
+            headers=headers,
+            data=data,
+        )
+        print(response.json())
 
 if __name__ == "__main__":
     get_review()
