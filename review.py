@@ -27,8 +27,8 @@ def get_review():
     response.raise_for_status()  # raise exception if request failed
     commits = response.json()
 
-    # Filter commits to exclude those with "no-review" in the message
-    filtered_commits = [commit for commit in commits if "no-review" not in commit["commit"]["message"].lower()]
+    # Filter commits to include those with "gptreview" in the message
+    filtered_commits = [commit for commit in commits if "gptreview" in commit["commit"]["message"]]
 
     # Get the diff for each commit
     for commit in filtered_commits:
