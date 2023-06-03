@@ -32,7 +32,7 @@ def get_review():
 
     # Get the diff for each commit
     for commit in filtered_commits:
-        response = requests.get(f"https://api.github.com/repos/{owner}/{repo}/commits/{commit['sha']}", headers=headers)
+        response = requests.get(f"https://api.github.com/repos/{OWNER}/{REPO}/commits/{commit['sha']}", headers=headers)
         response.raise_for_status()  # raise exception if request failed
         # Remove indentation and blank spaces
         compact_diff = ''.join(line.lstrip() for line in response.text.splitlines())
