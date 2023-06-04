@@ -28,7 +28,7 @@ def get_review():
     commits = response.json()
 
     # Filter commits to include those with "gptreview" in the message
-    filtered_commits = [commit for commit in commits if "gptreview" in commit["commit"]["message"]]
+    filtered_commits = [commit for commit in commits if "feat" in commit["commit"]["message"]]
 
     # Get the diff for each commit
     for commit in filtered_commits:
