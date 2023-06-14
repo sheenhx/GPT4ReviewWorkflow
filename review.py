@@ -7,7 +7,7 @@ import math
 def get_review():
     ACCESS_TOKEN = os.getenv("GITHUB_TOKEN")
     GIT_COMMIT_HASH = os.getenv("GIT_COMMIT_HASH")
-    model = "gpt-4"
+    model = "gpt-4-0613"
     openai.api_key = os.getenv("OPENAI_API_KEY")
     openai.organization = os.getenv("OPENAI_ORG_KEY")
     pr_link = os.getenv("LINK")
