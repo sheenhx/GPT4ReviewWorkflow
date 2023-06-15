@@ -9,3 +9,4 @@ Get OpenAI GPT models to suggest changes on your pull request in the comments.
 3. Get an [OpenAI Org ID here](https://beta.openai.com/account/org-settings)
 4. Create two secrets in your project's settings called OPENAI_API_KEY for your OpenAI API Key and OPENAI_ORG_KEY for your OpenAI Organization ID..
 5. Create GH_TOKEN in the same repo secrets with a Personal Access Token
+6. Only commits with message "gptreview" will be reviewed
