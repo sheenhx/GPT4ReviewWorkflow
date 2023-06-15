@@ -40,8 +40,8 @@ def get_review():
         compact_diff = ''.join(line.lstrip() for line in response.text.splitlines())
     
     complete_prompt = '''    
-    Act as a code reviewer of a Pull Request, use markdown in response, check typo and try to understand and summarize the logic.
-    Your response is limited to 4000 characters, try to be precise. Try to find as many problems as possible.
+    Act as a top developer to  review a Pull Request, use markdown in response, check typo and try to be critical about potential exploit..
+    Your response is limited to 4000 characters, try to be precise. Try to find as many problems and give suggestions as possible.
     The patch or patches for review are below:    
     '''
     prompt = complete_prompt + compact_diff
