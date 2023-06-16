@@ -49,7 +49,7 @@ def get_review():
     print(f"\nPrompt in full sent to GPT-4: {prompt}\n")
 
     AVG_CHAR_PER_TOKEN = 2
-    CHUNK_SIZE = 25000
+    CHUNK_SIZE = 20000
     num_chunks = math.ceil(len(prompt) / AVG_CHAR_PER_TOKEN / CHUNK_SIZE)
     reviews = []
 
