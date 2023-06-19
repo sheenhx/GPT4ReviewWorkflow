@@ -7,7 +7,7 @@ import math
 def get_review():
     ACCESS_TOKEN = os.getenv("GITHUB_TOKEN")
     GIT_COMMIT_HASH = os.getenv("GIT_COMMIT_HASH")
-    model = "gpt-3.5-turbo-16k-0613"
+    model = "gpt-4-0613"
     openai.api_key = os.getenv("OPENAI_API_KEY")
     openai.organization = os.getenv("OPENAI_ORG_KEY")
     pr_link = os.getenv("LINK")
@@ -49,7 +49,7 @@ def get_review():
     print(f"\nPrompt in full sent to GPT-4: {prompt}\n")
 
     AVG_CHAR_PER_TOKEN = 2
-    CHUNK_SIZE = 20000
+    CHUNK_SIZE = 7000
     num_chunks = math.ceil(len(prompt) / AVG_CHAR_PER_TOKEN / CHUNK_SIZE)
     reviews = []
 
